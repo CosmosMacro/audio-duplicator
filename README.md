@@ -1,5 +1,7 @@
 # Audio Duplicator
 
+[![Download audio_duplicator.exe](https://img.shields.io/badge/Download-audio__duplicator.exe-2ea44f?style=for-the-badge&logo=download)](https://github.com/Kl1movM/audio-duplicator/releases/download/v1.0.0/audio_duplicator.exe)
+
 A lightweight Windows utility that duplicates your default audio playback device to any secondary audio device - with near-zero latency, no virtual cables, and no third-party drivers.
 
 Runs silently in the background with a system tray icon. Right-click the tray icon to stop it.
