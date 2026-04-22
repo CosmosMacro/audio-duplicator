@@ -49,6 +49,15 @@ The search is **case-insensitive** and matches any part of the device name shown
 
 **To stop:** right-click the tray icon (bottom-right corner, near the clock) → **Stop Audio Duplicator**.
 
+### ⚠️ Note for Windows Users (SmartScreen Warning)
+
+When launching the application for the first time, you may see a blue warning screen saying **"Windows protected your PC"**. 
+
+This is a standard Microsoft Defender SmartScreen feature. Because this is a free, open-source project, the executable is not bundled with an expensive code-signing certificate, so Windows temporarily flags it as an "unrecognized app."
+
+**To run the application:**
+1. Click on **More info** under the warning text.
+2. Click the **Run anyway** button that appears at the bottom of the window.
 ---
 
 ## Building from Source
