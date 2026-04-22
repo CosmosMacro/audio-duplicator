@@ -1,0 +1,36 @@
+# Build output
+*.exe
+*.obj
+*.pdb
+*.ilk
+*.exp
+*.lib
+
+# Visual Studio
+.vs/
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+*.sln
+*.suo
+*.user
+*.aps
+*.ncb
+*.opensdf
+*.sdf
+*.cachefile
+*.VC.db
+*.VC.opendb
+ipch/
+Debug/
+Release/
+x64/
+x86/
+
+# MinGW / GCC
+*.o
+*.a
+
+# OS
+Thumbs.db
+.DS_Store
