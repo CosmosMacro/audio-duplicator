@@ -49,6 +49,10 @@ The search is **case-insensitive** and matches any part of the device name shown
 
 **To stop:** right-click the tray icon (bottom-right corner, near the clock) → **Stop Audio Duplicator**.
 
+### Controlling the duplicated device volume
+
+The duplicated device has its own independent volume in Windows. To adjust it, temporarily set it as your default device, change its volume in the Windows volume mixer, then switch your default back to your main device. Windows remembers the volume per device, so it will stay at whatever level you set.
+
 ### ⚠️ Note for Windows Users (SmartScreen Warning)
 
 When launching the application for the first time, you may see a blue warning screen saying **"Windows protected your PC"**. 
