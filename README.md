@@ -1,122 +1,112 @@
 # Audio Duplicator
 
-[![Download audio_duplicator.exe](https://img.shields.io/badge/Download-audio__duplicator.exe-2ea44f?style=for-the-badge&logo=download)](https://github.com/Kl1movM/audio-duplicator/releases/download/v1.0.0/audio_duplicator.exe)
+Audio Duplicator is a lightweight Windows utility that copies audio from the current Windows default playback device to a second playback device. It uses the Windows Core Audio API (WASAPI), installs no driver, and does not require administrator rights.
 
-A lightweight Windows utility that duplicates your default audio playback device to any secondary audio device - with near-zero latency, no virtual cables, and no third-party drivers.
+## Intended use
 
-Runs silently in the background with a system tray icon. Right-click the tray icon to stop it.
+A typical two-headphone setup is:
 
----
+1. Connect both pairs of headphones to Windows.
+2. Set the first pair as the Windows default playback device.
+3. Start Audio Duplicator.
+4. Select the second pair in the application window.
+5. Start the film or other media normally.
 
-## How It Works
+The first device continues to receive audio directly from Windows. Audio Duplicator captures that output through WASAPI loopback and sends a copy to the selected secondary device.
 
-There are two devices involved:
+## Current limitations
 
-- **Device 1 - Your main device** (chosen by you in Windows): This is whatever you set as your default playback device in Windows Sound settings - your speakers, headphones, TV, Bluetooth device, etc. You control this normally through the Windows volume menu. Audio Duplicator does not touch this setting.
-
-- **Device 2 - The duplicated device** (chosen by the app): This is the secondary device you pass as an argument (e.g. `"USB Audio"`). Audio Duplicator listens to whatever is playing on Device 1 and sends an exact copy of that audio to Device 2 simultaneously, in real time.
-
-Under the hood, Audio Duplicator uses the **Windows Core Audio API (WASAPI)**:
-
-- **Loopback capture** - grabs the audio stream from your default playback device right before it hits your speakers
-- **Event-driven render** - immediately writes it to your chosen secondary device using a 10ms buffer
-- **Built-in resampler** - automatically handles sample rate differences (e.g. 48kHz vs 44.1kHz) between devices
-
-No audio settings are changed. No drivers are installed. The program just copies the stream while it runs.
-
----
+- The primary output is the Windows default device and is shown as read-only in the application.
+- Bluetooth devices may have different latency. The two pairs can therefore be slightly out of sync.
+- Automatic reconnection and clock-drift correction are not implemented yet.
+- Avoid enabling an AirPods microphone while watching a film, because Windows may switch the device to its lower-quality hands-free profile.
 
 ## Requirements
 
-- Windows 10 or 11
-- A secondary audio output device (USB adapter, HDMI, Bluetooth, etc.)
-
----
+- Windows 10 or Windows 11
+- Two active playback devices recognized by Windows
 
 ## Usage
 
-**Double-click** `audio_duplicator.exe` to start.
+### Graphical selection
 
-By default it looks for a device named **"Speakers"**. You can target a different device by passing a name substring as an argument:
+Double-click `audio_duplicator.exe`.
 
-```
-audio_duplicator.exe "USB Audio"
-audio_duplicator.exe "HDMI"
-audio_duplicator.exe "Realtek"
-```
+The window displays:
 
-The search is **case-insensitive** and matches any part of the device name shown in Windows Sound settings.
+- **Primary output:** the current Windows default playback device;
+- **Secondary output:** the device that will receive the duplicated stream.
 
-**To stop:** right-click the tray icon (bottom-right corner, near the clock) → **Stop Audio Duplicator**.
+The application refuses to use the same device for both roles. After starting, it runs in the notification area. Click or right-click its tray icon and choose **Stop Audio Duplicator** to close it.
 
-### Controlling the duplicated device volume
+### Command line
 
-The duplicated device has its own independent volume in Windows. To adjust it, temporarily set it as your default device, change its volume in the Windows volume mixer, then switch your default back to your main device. Windows remembers the volume per device, so it will stay at whatever level you set.
+List all active playback devices and their stable Windows IDs:
 
-### ⚠️ Note for Windows Users (SmartScreen Warning)
-
-When launching the application for the first time, you may see a blue warning screen saying **"Windows protected your PC"**. 
-
-This is a standard Microsoft Defender SmartScreen feature. Because this is a free, open-source project, the executable is not bundled with an expensive code-signing certificate, so Windows temporarily flags it as an "unrecognized app."
-
-**To run the application:**
-1. Click on **More info** under the warning text.
-2. Click the **Run anyway** button that appears at the bottom of the window.
----
-
-## Building from Source
-
-### Option A - MSVC (Visual Studio)
-
-1. Open a **Developer Command Prompt** (search for it in the Start menu)
-2. Navigate to the project folder
-3. Run:
-```
-cl /EHsc /O2 audio_duplicator.cpp /link ole32.lib mmdevapi.lib avrt.lib
+```powershell
+audio_duplicator.exe --list-devices
 ```
 
-Or open the project in Visual Studio 2022:
-- Create a new **Empty C++ Project**
-- Add `audio_duplicator.cpp` to Source Files
-- Set **Configuration** to `Release` and **Platform** to `x64`
-- Go to **Project → Properties → Linker → System → SubSystem** → set to `Windows`
-- Go to **Linker → Input → Additional Dependencies** → add `ole32.lib;mmdevapi.lib;avrt.lib`
-- Build → **Build Solution** (`Ctrl+Shift+B`)
+Start with an exact device ID:
 
-### Option B - MinGW / g++
-
-```
-g++ -std=c++17 -O2 -o audio_duplicator.exe audio_duplicator.cpp -lole32 -lmmdevapi -lavrt -luuid
+```powershell
+audio_duplicator.exe --device-id "{DEVICE-ID-FROM-THE-LIST}"
 ```
 
-### Required headers (all standard Windows SDK - no downloads needed)
+The original name-substring syntax remains available for compatibility:
 
-| Header | Purpose |
-|---|---|
-| `mmdeviceapi.h` | Device enumeration |
-| `audioclient.h` | WASAPI audio streaming |
-| `avrt.h` | Real-time thread priority |
-| `shellapi.h` | System tray icon |
-| `functiondiscoverykeys_devpkey.h` | Device friendly name |
+```powershell
+audio_duplicator.exe "AirPods"
+```
 
-### Required libraries
+If more than one device matches the supplied name, the program stops and asks you to use an exact device ID instead.
 
-| Library | Purpose |
-|---|---|
-| `ole32.lib` | COM initialization |
-| `mmdevapi.lib` | WASAPI device API |
-| `avrt.lib` | Audio thread scheduling |
+## How it works
 
----
+Audio Duplicator uses WASAPI in shared mode:
 
-## Tips
+- **loopback capture** reads the stream sent to the Windows default playback device;
+- **event-driven rendering** writes captured frames to the selected secondary device;
+- **basic resampling** handles common sample-rate or channel-count differences.
 
-- If the target device isn't found, check its exact name in **Settings → System → Sound → More sound settings → Playback tab**. Use any unique substring of that name as the argument.
-- If you hear crackling or dropouts, your device may need a larger buffer. Change the `100000` value (10ms) in both `Initialize()` calls in the source to `200000` (20ms).
-- The program works with any device Windows recognizes as an audio output: USB adapters, HDMI, Bluetooth speakers, virtual devices, etc.
+No Windows audio settings are modified by the application.
 
----
+## Building from source
+
+The recommended build path is CMake with Visual Studio 2022:
+
+```powershell
+cmake -S . -B build -A x64
+cmake --build build --config Release
+```
+
+The executable is created under:
+
+```text
+build/Release/audio_duplicator.exe
+```
+
+Every pull request is also compiled by the `Windows build` GitHub Actions workflow. The workflow publishes an unsigned x64 artifact and a SHA-256 checksum generated from the same public source revision.
+
+## Security model
+
+See [`SECURITY.md`](SECURITY.md). The project is expected to:
+
+- perform no network access;
+- install no driver or Windows service;
+- create no startup persistence;
+- require no administrator privileges;
+- process audio locally in memory.
+
+Unsigned builds may trigger Microsoft Defender SmartScreen. Prefer an executable built locally or generated by this repository's transparent GitHub Actions workflow rather than an unrelated prebuilt binary.
+
+## Troubleshooting
+
+- If the second pair is missing, confirm that it is connected and shown under **Settings > System > Sound** before starting the application.
+- If audio crackles or drops out, Bluetooth buffering may be insufficient. A later version will expose the buffer size in the interface.
+- If two AirPods entries have similar names, use the graphical selector or `--list-devices` followed by `--device-id`.
+- Set the pair that should play directly as the Windows default output before launching Audio Duplicator.
 
 ## License
 
-MIT - see [LICENSE](LICENSE)
+MIT — see [`LICENSE`](LICENSE).
