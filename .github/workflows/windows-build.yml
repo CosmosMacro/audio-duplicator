@@ -1,0 +1,43 @@
+name: Windows build
+
+on:
+  push:
+    branches: [main, "agent/**"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-2022
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Configure
+        run: cmake -S . -B build -A x64
+
+      - name: Build
+        run: cmake --build build --config Release --parallel
+
+      - name: Prepare artifact
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+          Copy-Item build/Release/audio_duplicator.exe dist/audio_duplicator.exe
+          Get-FileHash dist/audio_duplicator.exe -Algorithm SHA256 |
+            ForEach-Object { "$($_.Hash.ToLower())  audio_duplicator.exe" } |
+            Set-Content dist/SHA256SUMS.txt
+          Copy-Item LICENSE dist/LICENSE.txt
+
+      - name: Upload unsigned build
+        uses: actions/upload-artifact@v4
+        with:
+          name: audio-duplicator-windows-x64-unsigned
+          path: dist/
+          if-no-files-found: error
+          retention-days: 14
