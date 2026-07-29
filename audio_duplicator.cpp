@@ -585,7 +585,7 @@ int main(int argc, char* argv[]) {
     hr = captureClient->Initialize(
         AUDCLNT_SHAREMODE_SHARED,
         AUDCLNT_STREAMFLAGS_LOOPBACK | AUDCLNT_STREAMFLAGS_EVENTCALLBACK,
-        100000, 0, captureFormat, nullptr);
+        0, 0, captureFormat, nullptr);
     CHECK_HR(hr, "Initialize capture IAudioClient");
 
     hr = captureClient->SetEventHandle(captureEvent);
@@ -612,7 +612,7 @@ int main(int argc, char* argv[]) {
     hr = renderClient->Initialize(
         AUDCLNT_SHAREMODE_SHARED,
         AUDCLNT_STREAMFLAGS_EVENTCALLBACK,
-        100000, 0, renderFormat, nullptr);
+        0, 0, renderFormat, nullptr);
     CHECK_HR(hr, "Initialize render IAudioClient");
 
     hr = renderClient->SetEventHandle(renderEvent);
