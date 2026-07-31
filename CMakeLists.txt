@@ -1,13 +1,13 @@
 cmake_minimum_required(VERSION 3.21)
 
-project(audio_duplicator VERSION 0.2.1 LANGUAGES CXX)
+project(audio_duplicator VERSION 0.2.2 LANGUAGES CXX)
 
 if(NOT WIN32)
     message(FATAL_ERROR "Audio Duplicator currently supports Windows only.")
 endif()
 
 add_executable(audio_duplicator WIN32
-    audio_duplicator_compat.cpp
+    audio_duplicator_polling.cpp
     device_selector.cpp
     device_selector.h
 )
